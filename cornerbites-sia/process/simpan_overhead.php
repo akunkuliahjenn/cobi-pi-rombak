@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 require_once __DIR__ . '/../includes/auth_check.php';
@@ -9,9 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $type = $_POST['type'] ?? '';
 
         if ($type == 'overhead') {
+            $overhead_id = $_POST['overhead_id'] ?? '';
             $name = trim($_POST['name'] ?? '');
             $amount = floatval($_POST['amount'] ?? 0);
-            $allocation_method = $_POST['allocation_method'] ?? 'percentage';
             $description = trim($_POST['description'] ?? '');
 
             // Validasi input
@@ -23,22 +24,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 throw new Exception("Jumlah biaya harus lebih dari 0!");
             }
 
-            // Cek duplikasi nama
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM overhead_costs WHERE name = ? AND is_active = 1");
-            $stmt->execute([$name]);
-            if ($stmt->fetchColumn() > 0) {
-                throw new Exception("Nama biaya overhead sudah ada!");
+            if (!empty($overhead_id)) {
+                // Mode edit
+                // Cek duplikasi nama (kecuali data yang sedang diedit)
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM overhead_costs WHERE name = ? AND id != ? AND is_active = 1");
+                $stmt->execute([$name, $overhead_id]);
+                if ($stmt->fetchColumn() > 0) {
+                    throw new Exception("Nama biaya overhead sudah ada!");
+                }
+
+                // Update data
+                $stmt = $conn->prepare("UPDATE overhead_costs SET name = ?, description = ?, amount = ?, updated_at = NOW() WHERE id = ?");
+                $stmt->execute([$name, $description, $amount, $overhead_id]);
+
+                $_SESSION['overhead_message'] = [
+                    'text' => 'Biaya overhead berhasil diperbarui!',
+                    'type' => 'success'
+                ];
+            } else {
+                // Mode tambah
+                // Cek duplikasi nama
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM overhead_costs WHERE name = ? AND is_active = 1");
+                $stmt->execute([$name]);
+                if ($stmt->fetchColumn() > 0) {
+                    throw new Exception("Nama biaya overhead sudah ada!");
+                }
+
+                $stmt = $conn->prepare("INSERT INTO overhead_costs (name, description, amount, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())");
+                $stmt->execute([$name, $description, $amount]);
+
+                $_SESSION['overhead_message'] = [
+                    'text' => 'Biaya overhead berhasil ditambahkan!',
+                    'type' => 'success'
+                ];
             }
 
-            $stmt = $conn->prepare("INSERT INTO overhead_costs (name, description, amount, allocation_method) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$name, $description, $amount, $allocation_method]);
-
-            $_SESSION['overhead_message'] = [
-                'text' => 'Biaya overhead berhasil ditambahkan!',
-                'type' => 'success'
-            ];
-
         } elseif ($type == 'labor') {
+            $labor_id = $_POST['labor_id'] ?? '';
             $position_name = trim($_POST['position_name'] ?? '');
             $hourly_rate = floatval($_POST['hourly_rate'] ?? 0);
 
@@ -51,20 +73,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 throw new Exception("Upah per jam harus lebih dari 0!");
             }
 
-            // Cek duplikasi posisi
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM labor_costs WHERE position_name = ? AND is_active = 1");
-            $stmt->execute([$position_name]);
-            if ($stmt->fetchColumn() > 0) {
-                throw new Exception("Posisi/jabatan sudah ada!");
+            if (!empty($labor_id)) {
+                // Mode edit
+                // Cek duplikasi posisi (kecuali data yang sedang diedit)
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM labor_costs WHERE position_name = ? AND id != ? AND is_active = 1");
+                $stmt->execute([$position_name, $labor_id]);
+                if ($stmt->fetchColumn() > 0) {
+                    throw new Exception("Posisi/jabatan sudah ada!");
+                }
+
+                // Update data
+                $stmt = $conn->prepare("UPDATE labor_costs SET position_name = ?, hourly_rate = ?, updated_at = NOW() WHERE id = ?");
+                $stmt->execute([$position_name, $hourly_rate, $labor_id]);
+
+                $_SESSION['overhead_message'] = [
+                    'text' => 'Data tenaga kerja berhasil diperbarui!',
+                    'type' => 'success'
+                ];
+            } else {
+                // Mode tambah
+                // Cek duplikasi posisi
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM labor_costs WHERE position_name = ? AND is_active = 1");
+                $stmt->execute([$position_name]);
+                if ($stmt->fetchColumn() > 0) {
+                    throw new Exception("Posisi/jabatan sudah ada!");
+                }
+
+                $stmt = $conn->prepare("INSERT INTO labor_costs (position_name, hourly_rate, is_active, created_at, updated_at) VALUES (?, ?, 1, NOW(), NOW())");
+                $stmt->execute([$position_name, $hourly_rate]);
+
+                $_SESSION['overhead_message'] = [
+                    'text' => 'Data tenaga kerja berhasil ditambahkan!',
+                    'type' => 'success'
+                ];
             }
-
-            $stmt = $conn->prepare("INSERT INTO labor_costs (position_name, hourly_rate) VALUES (?, ?)");
-            $stmt->execute([$position_name, $hourly_rate]);
-
-            $_SESSION['overhead_message'] = [
-                'text' => 'Data tenaga kerja berhasil ditambahkan!',
-                'type' => 'success'
-            ];
 
         } else {
             throw new Exception("Tipe data tidak valid!");
