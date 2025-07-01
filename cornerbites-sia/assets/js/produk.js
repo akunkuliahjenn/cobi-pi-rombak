@@ -1,4 +1,3 @@
-
 // Produk JavaScript Functions
 
 // Format Rupiah function
@@ -39,10 +38,16 @@ function editProduct(product) {
     
     document.getElementById('stock').value = product.stock;
     
-    // Format dan set harga jual - mempertahankan nilai lama
+    // Format dan set harga jual - mempertahankan nilai lama dan menampilkan info harga terakhir
     const formattedPrice = new Intl.NumberFormat('id-ID').format(product.sale_price);
     document.getElementById('sale_price_display').value = formattedPrice;
     document.getElementById('sale_price').value = product.sale_price;
+
+    // Tampilkan info harga terakhir
+    const lastPriceInfo = document.getElementById('last_price_info');
+    const lastPriceValue = document.getElementById('last_price_value');
+    lastPriceValue.textContent = 'Rp ' + formattedPrice;
+    lastPriceInfo.classList.remove('hidden');
 
     // Update judul form
     const formTitle = document.getElementById('form_title');
@@ -61,7 +66,7 @@ function editProduct(product) {
     
     submitButton.innerHTML = `
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
         </svg>
         Edit Produk
     `;
@@ -96,6 +101,10 @@ function resetForm() {
     // Reset display dan hidden inputs untuk harga
     document.getElementById('sale_price_display').value = '';
     document.getElementById('sale_price').value = '';
+
+    // Sembunyikan info harga terakhir
+    const lastPriceInfo = document.getElementById('last_price_info');
+    lastPriceInfo.classList.add('hidden');
 
     // Reset judul form
     const formTitle = document.getElementById('form_title');
