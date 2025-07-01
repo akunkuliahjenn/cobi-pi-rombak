@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require_once __DIR__ . '/../includes/auth_check.php';
@@ -126,5 +125,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-header('Location: /cornerbites-sia/pages/overhead_management.php');
+header('Location: /cornerbites-sia/pages/overhead_management.php?reload=1');
 exit;

@@ -1,4 +1,8 @@
 
+// Global variables
+let searchOverheadTimeout;
+let searchLaborTimeout;
+
 // Reset form overhead
 function resetOverheadForm() {
     document.getElementById('overhead_id_to_edit').value = '';
@@ -109,8 +113,100 @@ function deleteLabor(id, name) {
     }
 }
 
+// Function untuk load overhead data dengan AJAX
+function loadOverheadData(page = 1) {
+    const searchInput = document.getElementById('search-overhead-input');
+    const limitSelect = document.getElementById('limit-overhead-select');
+    const container = document.getElementById('overhead-container');
+    
+    if (!searchInput || !limitSelect || !container) {
+        console.error('Element tidak ditemukan untuk overhead');
+        return;
+    }
+
+    const searchValue = searchInput.value;
+    const limitValue = limitSelect.value;
+
+    const params = new URLSearchParams({
+        search_overhead: searchValue,
+        limit_overhead: limitValue,
+        page_overhead: page,
+        ajax: 'overhead'
+    });
+
+    // Show loading
+    container.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span class="ml-2 text-gray-600">Memuat...</span></div>';
+
+    fetch(`/cornerbites-sia/pages/overhead_management.php?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading overhead data:', error);
+            container.innerHTML = '<div class="text-center py-12 text-red-600">Terjadi kesalahan saat memuat data overhead.</div>';
+        });
+}
+
+// Function untuk load labor data dengan AJAX
+function loadLaborData(page = 1) {
+    const searchInput = document.getElementById('search-labor-input');
+    const limitSelect = document.getElementById('limit-labor-select');
+    const container = document.getElementById('labor-container');
+    
+    if (!searchInput || !limitSelect || !container) {
+        console.error('Element tidak ditemukan untuk labor');
+        return;
+    }
+
+    const searchValue = searchInput.value;
+    const limitValue = limitSelect.value;
+
+    const params = new URLSearchParams({
+        search_labor: searchValue,
+        limit_labor: limitValue,
+        page_labor: page,
+        ajax: 'labor'
+    });
+
+    // Show loading
+    container.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span class="ml-2 text-gray-600">Memuat...</span></div>';
+
+    fetch(`/cornerbites-sia/pages/overhead_management.php?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading labor data:', error);
+            container.innerHTML = '<div class="text-center py-12 text-red-600">Terjadi kesalahan saat memuat data tenaga kerja.</div>';
+        });
+}
+
+// Make functions global for pagination links
+window.loadOverheadData = loadOverheadData;
+window.loadLaborData = loadLaborData;
+
 // Format currency input
 document.addEventListener('DOMContentLoaded', function() {
+    // Only load data via AJAX if URL contains reload parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reload') === '1') {
+        // Load initial data automatically after form submission
+        loadOverheadData(1);
+        loadLaborData(1);
+    }
+    
     const amountInput = document.getElementById('overhead_amount');
     const hourlyRateInput = document.getElementById('labor_hourly_rate');
     
@@ -129,6 +225,92 @@ document.addEventListener('DOMContentLoaded', function() {
             if (value) {
                 e.target.value = value;
             }
+        });
+    }
+
+    // Setup event listeners untuk overhead search
+    const searchOverheadInput = document.getElementById('search-overhead-input');
+    const limitOverheadSelect = document.getElementById('limit-overhead-select');
+    const filterOverheadBtn = document.getElementById('filter-overhead-btn');
+    const resetOverheadBtn = document.getElementById('reset-overhead-btn');
+
+    // Setup event listeners untuk labor search
+    const searchLaborInput = document.getElementById('search-labor-input');
+    const limitLaborSelect = document.getElementById('limit-labor-select');
+    const filterLaborBtn = document.getElementById('filter-labor-btn');
+    const resetLaborBtn = document.getElementById('reset-labor-btn');
+
+    // Real-time search untuk overhead dengan debouncing
+    if (searchOverheadInput) {
+        searchOverheadInput.addEventListener('input', function() {
+            clearTimeout(searchOverheadTimeout);
+            searchOverheadTimeout = setTimeout(() => {
+                // Only search if user actually typed something
+                const currentValue = this.value.trim();
+                const initialValue = this.getAttribute('value') || '';
+                if (currentValue !== initialValue) {
+                    loadOverheadData(1);
+                }
+            }, 500);
+        });
+    }
+
+    // Real-time search untuk labor dengan debouncing
+    if (searchLaborInput) {
+        searchLaborInput.addEventListener('input', function() {
+            clearTimeout(searchLaborTimeout);
+            searchLaborTimeout = setTimeout(() => {
+                // Only search if user actually typed something
+                const currentValue = this.value.trim();
+                const initialValue = this.getAttribute('value') || '';
+                if (currentValue !== initialValue) {
+                    loadLaborData(1);
+                }
+            }, 500);
+        });
+    }
+
+    // Event listeners untuk overhead
+    if (filterOverheadBtn) {
+        filterOverheadBtn.addEventListener('click', function() {
+            loadOverheadData(1);
+        });
+    }
+
+    if (limitOverheadSelect) {
+        limitOverheadSelect.addEventListener('change', function() {
+            loadOverheadData(1);
+        });
+    }
+
+    if (resetOverheadBtn) {
+        resetOverheadBtn.addEventListener('click', function() {
+            searchOverheadInput.value = '';
+            limitOverheadSelect.value = '10';
+            // Reload page to show all data
+            window.location.href = '/cornerbites-sia/pages/overhead_management.php';
+        });
+    }
+
+    // Event listeners untuk labor
+    if (filterLaborBtn) {
+        filterLaborBtn.addEventListener('click', function() {
+            loadLaborData(1);
+        });
+    }
+
+    if (limitLaborSelect) {
+        limitLaborSelect.addEventListener('change', function() {
+            loadLaborData(1);
+        });
+    }
+
+    if (resetLaborBtn) {
+        resetLaborBtn.addEventListener('click', function() {
+            searchLaborInput.value = '';
+            limitLaborSelect.value = '10';
+            // Reload page to show all data
+            window.location.href = '/cornerbites-sia/pages/overhead_management.php';
         });
     }
 });
