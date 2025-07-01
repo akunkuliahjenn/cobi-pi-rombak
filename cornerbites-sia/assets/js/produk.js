@@ -39,56 +39,91 @@ function editProduct(product) {
     
     document.getElementById('stock').value = product.stock;
     
-    // Format dan set harga beli
-    document.getElementById('cost_price_display').value = new Intl.NumberFormat('id-ID').format(product.cost_price);
-    document.getElementById('cost_price').value = product.cost_price;
-    
-    // Format dan set harga jual
-    document.getElementById('sale_price_display').value = new Intl.NumberFormat('id-ID').format(product.sale_price);
+    // Format dan set harga jual - mempertahankan nilai lama
+    const formattedPrice = new Intl.NumberFormat('id-ID').format(product.sale_price);
+    document.getElementById('sale_price_display').value = formattedPrice;
     document.getElementById('sale_price').value = product.sale_price;
 
-    document.getElementById('submit_button').innerHTML = `
+    // Update judul form
+    const formTitle = document.getElementById('form_title');
+    const formDescription = document.getElementById('form_description');
+    
+    if (formTitle) {
+        formTitle.textContent = 'Edit Produk';
+    }
+    if (formDescription) {
+        formDescription.textContent = 'Ubah detail produk yang sudah ada sesuai kebutuhan Anda.';
+    }
+
+    // Update tombol dan tampilan
+    const submitButton = document.getElementById('submit_button');
+    const cancelButton = document.getElementById('cancel_edit_button');
+    
+    submitButton.innerHTML = `
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
         </svg>
-        Update Produk
+        Edit Produk
     `;
-    document.getElementById('submit_button').classList.remove('bg-green-600', 'hover:bg-green-700');
-    document.getElementById('submit_button').classList.add('bg-blue-600', 'hover:bg-blue-700');
-    document.getElementById('cancel_edit_button').classList.remove('hidden');
+    submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+    submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
     
-    // Scroll to top to make the form visible
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Tampilkan tombol batal edit
+    if (cancelButton) {
+        cancelButton.classList.remove('hidden');
+    }
+    
+    // Scroll to form to make it visible
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
 }
 
 // JavaScript untuk mereset form
 function resetForm() {
+    // Reset semua field
     document.getElementById('product_id_to_edit').value = '';
     document.getElementById('product_name').value = '';
     
     // Reset unit dropdown
-    document.getElementById('unit').value = '';
-    document.getElementById('unit_custom').value = '';
-    document.getElementById('unit_custom').classList.add('hidden');
-    document.getElementById('unit_custom').required = false;
+    const unitSelect = document.getElementById('unit');
+    const customInput = document.getElementById('unit_custom');
+    unitSelect.value = '';
+    customInput.value = '';
+    customInput.classList.add('hidden');
+    customInput.required = false;
     
     document.getElementById('stock').value = '';
     
     // Reset display dan hidden inputs untuk harga
-    document.getElementById('cost_price_display').value = '';
-    document.getElementById('cost_price').value = '';
     document.getElementById('sale_price_display').value = '';
     document.getElementById('sale_price').value = '';
 
-    document.getElementById('submit_button').innerHTML = `
+    // Reset judul form
+    const formTitle = document.getElementById('form_title');
+    const formDescription = document.getElementById('form_description');
+    
+    if (formTitle) {
+        formTitle.textContent = 'Tambah Produk Baru';
+    }
+    if (formDescription) {
+        formDescription.textContent = 'Isi detail produk baru Anda atau gunakan form ini untuk mengedit produk yang sudah ada.';
+    }
+
+    // Reset tombol ke mode tambah
+    const submitButton = document.getElementById('submit_button');
+    const cancelButton = document.getElementById('cancel_edit_button');
+    
+    submitButton.innerHTML = `
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
         Tambah Produk
     `;
-    document.getElementById('submit_button').classList.remove('bg-blue-600', 'hover:bg-blue-700');
-    document.getElementById('submit_button').classList.add('bg-green-600', 'hover:bg-green-700');
-    document.getElementById('cancel_edit_button').classList.add('hidden');
+    submitButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    submitButton.classList.add('bg-green-600', 'hover:bg-green-700');
+    cancelButton.classList.add('hidden');
+    
+    // Scroll ke form untuk menampilkan form
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Toggle custom unit input

@@ -20,12 +20,11 @@ try {
         $unit_select = trim($_POST['unit'] ?? '');
         $unit_custom = trim($_POST['unit_custom'] ?? '');
         $unit = ($unit_select === 'custom') ? $unit_custom : $unit_select;
-        $stock = (int) ($_POST['stock'] ?? 0); // Menggunakan 'stock' sesuai DB Anda
-        $cost_price = (float) ($_POST['cost_price'] ?? 0); // Menggunakan 'cost_price' sesuai DB Anda
+        $stock = (int) ($_POST['stock'] ?? 0);
         $sale_price = (float) ($_POST['sale_price'] ?? 0);
 
         // Validasi dasar
-        if (empty($name) || empty($unit) || $stock < 0 || $cost_price < 0 || $sale_price < 0) {
+        if (empty($name) || empty($unit) || $stock < 0 || $sale_price < 0) {
             $_SESSION['product_message'] = ['text' => 'Data produk tidak lengkap atau tidak valid.', 'type' => 'error'];
             header("Location: /cornerbites-sia/pages/produk.php");
             exit();
@@ -33,18 +32,16 @@ try {
 
         if ($product_id) {
             // --- Update Produk ---
-            // Pastikan nama kolom di sini sesuai dengan struktur DB Anda
-            $stmt = $conn->prepare("UPDATE products SET name = ?, unit = ?, stock = ?, cost_price = ?, sale_price = ? WHERE id = ?");
-            if ($stmt->execute([$name, $unit, $stock, $cost_price, $sale_price, $product_id])) {
+            $stmt = $conn->prepare("UPDATE products SET name = ?, unit = ?, stock = ?, sale_price = ? WHERE id = ?");
+            if ($stmt->execute([$name, $unit, $stock, $sale_price, $product_id])) {
                 $_SESSION['product_message'] = ['text' => 'Produk berhasil diperbarui!', 'type' => 'success'];
             } else {
                 $_SESSION['product_message'] = ['text' => 'Gagal memperbarui produk.', 'type' => 'error'];
             }
         } else {
             // --- Tambah Produk Baru ---
-            // Pastikan nama kolom di sini sesuai dengan struktur DB Anda
-            $stmt = $conn->prepare("INSERT INTO products (name, unit, stock, cost_price, sale_price) VALUES (?, ?, ?, ?, ?)");
-            if ($stmt->execute([$name, $unit, $stock, $cost_price, $sale_price])) {
+            $stmt = $conn->prepare("INSERT INTO products (name, unit, stock, sale_price) VALUES (?, ?, ?, ?)");
+            if ($stmt->execute([$name, $unit, $stock, $sale_price])) {
                 $_SESSION['product_message'] = ['text' => 'Produk baru berhasil ditambahkan!', 'type' => 'success'];
             } else {
                 $_SESSION['product_message'] = ['text' => 'Gagal menambahkan produk baru.', 'type' => 'error'];
@@ -64,11 +61,11 @@ try {
             exit();
         }
 
-        // Cek apakah produk terkait dengan transaksi
-        $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM transactions WHERE product_id = ?");
+        // Cek apakah produk terkait dengan resep atau batch produksi
+        $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM product_recipes WHERE product_id = ?");
         $stmtCheck->execute([$product_id]);
         if ($stmtCheck->fetchColumn() > 0) {
-            $_SESSION['product_message'] = ['text' => 'Tidak bisa menghapus produk karena sudah ada transaksi yang terkait dengannya. Produk yang sudah terjual sebaiknya diarsipkan atau ditandai tidak aktif.', 'type' => 'error'];
+            $_SESSION['product_message'] = ['text' => 'Tidak bisa menghapus produk karena sudah memiliki resep yang terkait. Hapus resep terlebih dahulu.', 'type' => 'error'];
             header("Location: /cornerbites-sia/pages/produk.php");
             exit();
         }
@@ -94,3 +91,4 @@ try {
     header("Location: /cornerbites-sia/pages/produk.php");
     exit();
 }
+?>
