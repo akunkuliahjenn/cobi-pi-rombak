@@ -302,8 +302,8 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                 </svg>
                                 <h3 class="text-lg font-semibold text-gray-800">Filter & Pencarian Bahan Baku</h3>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div class="md:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                                     <div class="relative">
                                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,20 +319,6 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                             <option value="<?php echo $option; ?>" <?php echo $rawMaterialsLimit == $option ? 'selected' : ''; ?>><?php echo $option; ?> Data</option>
                                         <?php endforeach; ?>
                                     </select>
-                                </div>
-                                <div class="flex items-end space-x-2">
-                                    <button id="filter_raw_btn" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                                        </svg>
-                                        Filter
-                                    </button>
-                                    <a href="/cornerbites-sia/pages/bahan_baku.php" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                        </svg>
-                                        Reset
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -461,8 +447,8 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                 </svg>
                                 <h3 class="text-lg font-semibold text-gray-800">Filter & Pencarian Kemasan</h3>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div class="md:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                                     <div class="relative">
                                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,20 +464,6 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                             <option value="<?php echo $option; ?>" <?php echo $packagingMaterialsLimit == $option ? 'selected' : ''; ?>><?php echo $option; ?> Data</option>
                                         <?php endforeach; ?>
                                     </select>
-                                </div>
-                                <div class="flex items-end space-x-2">
-                                    <button id="filter_kemasan_btn" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                                        </svg>
-                                        Filter
-                                    </button>
-                                    <a href="/cornerbites-sia/pages/bahan_baku.php" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                        </svg>
-                                        Reset
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -607,4 +579,3 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
 <script src="../assets/js/bahan_baku.js"></script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
-

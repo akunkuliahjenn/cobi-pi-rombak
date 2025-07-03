@@ -1,4 +1,3 @@
-
 // bahan_baku.js
 // JavaScript functions for bahan baku management
 
@@ -54,30 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     Tambah Kemasan
                 `;
             }
-        });
-    }
-
-    // Reset button functionality
-    const resetRawBtn = document.getElementById('reset_raw_btn');
-    const resetKemasanBtn = document.getElementById('reset_kemasan_btn');
-    
-    if (resetRawBtn) {
-        resetRawBtn.addEventListener('click', function() {
-            const searchInput = document.getElementById('search_raw');
-            const limitSelect = document.getElementById('bahan_limit');
-            if (searchInput) searchInput.value = '';
-            if (limitSelect) limitSelect.value = '6';
-            applySearchRealtime('raw', '', '6');
-        });
-    }
-
-    if (resetKemasanBtn) {
-        resetKemasanBtn.addEventListener('click', function() {
-            const searchInput = document.getElementById('search_kemasan');
-            const limitSelect = document.getElementById('kemasan_limit');
-            if (searchInput) searchInput.value = '';
-            if (limitSelect) limitSelect.value = '6';
-            applySearchRealtime('kemasan', '', '6');
         });
     }
 
