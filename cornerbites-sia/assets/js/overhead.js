@@ -1,4 +1,3 @@
-
 // Global variables
 let searchOverheadTimeout;
 let searchLaborTimeout;
@@ -34,11 +33,94 @@ function resetLaborForm() {
     document.getElementById('labor_cancel_edit_button').classList.add('hidden');
 }
 
+// Format number function with thousand separators, no decimals
+function formatNumber(num) {
+    // Remove all non-digit characters first
+    const cleanNum = num.toString().replace(/[^\d]/g, '');
+    if (cleanNum === '' || cleanNum === '0') return '';
+    
+    // Convert to integer and format with thousand separators using Indonesian locale
+    return parseInt(cleanNum).toLocaleString('id-ID');
+}
+
+// Parse formatted number back to integer
+function parseFormattedNumber(formattedNum) {
+    return formattedNum.replace(/[^\d]/g, '');
+}
+
+// Enhanced input formatting with cursor position handling
+function handleNumberInput(inputElement) {
+    inputElement.addEventListener('input', function(e) {
+        // Store cursor position
+        const cursorPosition = e.target.selectionStart;
+        const oldValue = e.target.value;
+        const oldLength = oldValue.length;
+        
+        // Get only digits
+        const digitsOnly = oldValue.replace(/[^\d]/g, '');
+        
+        // Format the number
+        let formattedValue = '';
+        if (digitsOnly !== '' && digitsOnly !== '0') {
+            formattedValue = formatNumber(digitsOnly);
+        }
+        
+        // Update input value
+        e.target.value = formattedValue;
+        
+        // Calculate new cursor position
+        const newLength = formattedValue.length;
+        const lengthDiff = newLength - oldLength;
+        let newCursorPosition = cursorPosition + lengthDiff;
+        
+        // Ensure cursor position is within bounds
+        newCursorPosition = Math.max(0, Math.min(newCursorPosition, formattedValue.length));
+        
+        // Set cursor position
+        setTimeout(() => {
+            e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+        }, 0);
+    });
+
+    // Handle paste events
+    inputElement.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        const digitsOnly = pastedText.replace(/[^\d]/g, '');
+        if (digitsOnly !== '' && digitsOnly !== '0') {
+            e.target.value = formatNumber(digitsOnly);
+        } else {
+            e.target.value = '';
+        }
+    });
+
+    // Prevent non-numeric input
+    inputElement.addEventListener('keypress', function(e) {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true)) {
+            return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+}
+
 // Edit overhead
 function editOverhead(overhead) {
     document.getElementById('overhead_id_to_edit').value = overhead.id;
     document.getElementById('overhead_name').value = overhead.name;
-    document.getElementById('overhead_amount').value = overhead.amount;
+    
+    // Format the amount value properly for editing (remove decimals, add thousand separators)
+    const amountValue = Math.floor(parseFloat(overhead.amount));
+    document.getElementById('overhead_amount').value = formatNumber(amountValue.toString());
+    
     document.getElementById('overhead_description').value = overhead.description || '';
     document.getElementById('overhead_form_title').textContent = 'Edit Biaya Overhead';
     document.getElementById('overhead_submit_button').innerHTML = `
@@ -48,13 +130,20 @@ function editOverhead(overhead) {
         Update Overhead
     `;
     document.getElementById('overhead_cancel_edit_button').classList.remove('hidden');
+    
+    // Scroll to form
+    document.getElementById('overhead_form_title').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Edit labor
 function editLabor(labor) {
     document.getElementById('labor_id_to_edit').value = labor.id;
     document.getElementById('labor_position_name').value = labor.position_name;
-    document.getElementById('labor_hourly_rate').value = labor.hourly_rate;
+    
+    // Format the hourly rate value properly for editing (remove decimals, add thousand separators)
+    const rateValue = Math.floor(parseFloat(labor.hourly_rate));
+    document.getElementById('labor_hourly_rate').value = formatNumber(rateValue.toString());
+    
     document.getElementById('labor_form_title').textContent = 'Edit Posisi Tenaga Kerja';
     document.getElementById('labor_submit_button').innerHTML = `
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,6 +152,9 @@ function editLabor(labor) {
         Update Posisi
     `;
     document.getElementById('labor_cancel_edit_button').classList.remove('hidden');
+    
+    // Scroll to form
+    document.getElementById('labor_form_title').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Delete overhead
@@ -197,7 +289,7 @@ function loadLaborData(page = 1) {
 window.loadOverheadData = loadOverheadData;
 window.loadLaborData = loadLaborData;
 
-// Format currency input
+// Format currency input with automatic thousand separators
 document.addEventListener('DOMContentLoaded', function() {
     // Only load data via AJAX if URL contains reload parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -206,26 +298,47 @@ document.addEventListener('DOMContentLoaded', function() {
         loadOverheadData(1);
         loadLaborData(1);
     }
-    
+
     const amountInput = document.getElementById('overhead_amount');
     const hourlyRateInput = document.getElementById('labor_hourly_rate');
-    
+
+    // Apply enhanced number formatting to inputs
     if (amountInput) {
-        amountInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            if (value) {
-                e.target.value = value;
-            }
-        });
+        handleNumberInput(amountInput);
+
+        // Convert ke number saat submit
+        const overheadForm = amountInput.closest('form');
+        if (overheadForm) {
+            overheadForm.addEventListener('submit', function(e) {
+                // Convert formatted number back to raw number for submission
+                const rawValue = parseFormattedNumber(amountInput.value);
+                if (rawValue === '' || rawValue === '0') {
+                    e.preventDefault();
+                    alert('Jumlah biaya harus diisi dan lebih dari 0!');
+                    return false;
+                }
+                amountInput.value = rawValue;
+            });
+        }
     }
-    
+
     if (hourlyRateInput) {
-        hourlyRateInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            if (value) {
-                e.target.value = value;
-            }
-        });
+        handleNumberInput(hourlyRateInput);
+
+        // Convert ke number saat submit
+        const laborForm = hourlyRateInput.closest('form');
+        if (laborForm) {
+            laborForm.addEventListener('submit', function(e) {
+                // Convert formatted number back to raw number for submission
+                const rawValue = parseFormattedNumber(hourlyRateInput.value);
+                if (rawValue === '' || rawValue === '0') {
+                    e.preventDefault();
+                    alert('Upah per jam harus diisi dan lebih dari 0!');
+                    return false;
+                }
+                hourlyRateInput.value = rawValue;
+            });
+        }
     }
 
     // Setup event listeners untuk overhead search
@@ -311,6 +424,28 @@ document.addEventListener('DOMContentLoaded', function() {
             limitLaborSelect.value = '10';
             // Reload page to show all data
             window.location.href = '/cornerbites-sia/pages/overhead_management.php';
+        });
+    }
+
+    // Setup cancel edit button events - FIXED
+    const overheadCancelBtn = document.getElementById('overhead_cancel_edit_button');
+    const laborCancelBtn = document.getElementById('labor_cancel_edit_button');
+
+    if (overheadCancelBtn) {
+        overheadCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            resetOverheadForm();
+            return false;
+        });
+    }
+
+    if (laborCancelBtn) {
+        laborCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            resetLaborForm();
+            return false;
         });
     }
 });

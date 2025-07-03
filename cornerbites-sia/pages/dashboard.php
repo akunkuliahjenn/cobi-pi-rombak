@@ -221,48 +221,6 @@ try {
                     </div>
                     <?php endif; ?>
                 </div>
-
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Aksi Cepat</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="/cornerbites-sia/pages/hpp_calculator.php" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-medium text-blue-900">Hitung HPP</h4>
-                                <p class="text-sm text-blue-600">Kalkulasi biaya produksi</p>
-                            </div>
-                        </a>
-
-                        <a href="/cornerbites-sia/pages/produk.php" class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-medium text-green-900">Tambah Produk</h4>
-                                <p class="text-sm text-green-600">Daftarkan produk baru</p>
-                            </div>
-                        </a>
-
-                        <a href="/cornerbites-sia/pages/bahan_baku.php" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
-                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-medium text-purple-900">Kelola Bahan</h4>
-                                <p class="text-sm text-purple-600">Update stok bahan baku</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
             </div>
         </main>
     </div>
