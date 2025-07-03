@@ -27,8 +27,8 @@ try {
     $stmt = $conn->query("SELECT COUNT(*) as total FROM products WHERE stock < 10");
     $lowStockProducts = $stmt->fetch()['total'] ?? 0;
 
-    // Low Stock Raw Materials (< 5)
-    $stmt = $conn->query("SELECT COUNT(*) as total FROM raw_materials WHERE current_stock < 5");
+    // Low Stock Raw Materials (< 1)
+    $stmt = $conn->query("SELECT COUNT(*) as total FROM raw_materials WHERE current_stock < 1");
     $lowStockMaterials = $stmt->fetch()['total'] ?? 0;
 
     // Total Recipes
@@ -161,7 +161,7 @@ try {
                             </div>
                             <div>
                                 <h3 class="text-lg font-semibold text-red-800">Bahan Baku Menipis</h3>
-                                <p class="text-sm text-red-600"><?php echo $lowStockMaterials; ?> bahan dengan stok < 5</p>
+                                <p class="text-sm text-red-600"><?php echo $lowStockMaterials; ?> bahan dengan stok < 1</p>
                             </div>
                         </div>
                         <a href="/cornerbites-sia/pages/bahan_baku.php" class="text-red-600 hover:text-red-800 text-sm font-medium">

@@ -99,7 +99,29 @@ try {
 
             $stmt = $conn->prepare("INSERT INTO product_recipes (product_id, raw_material_id, quantity_used, unit_measurement) VALUES (?, ?, ?, ?)");
             if ($stmt->execute([$product_id, $raw_material_id, $quantity_used, $unit_measurement])) {
-                $_SESSION['resep_message'] = ['text' => 'Item resep baru berhasil ditambahkan!', 'type' => 'success'];
+                // Otomatis mengurangi stok bahan baku/kemasan berdasarkan quantity yang digunakan
+                $stmtGetMaterial = $conn->prepare("SELECT current_stock, default_package_quantity, name FROM raw_materials WHERE id = ?");
+                $stmtGetMaterial->execute([$raw_material_id]);
+                $materialInfo = $stmtGetMaterial->fetch(PDO::FETCH_ASSOC);
+
+                if ($materialInfo) {
+                    $currentStock = $materialInfo['current_stock'];
+                    $packageQuantity = $materialInfo['default_package_quantity'];
+                    $materialName = $materialInfo['name'];
+
+                    // Hitung berapa kemasan yang dibutuhkan untuk quantity yang digunakan
+                    $packagesNeeded = ceil($quantity_used / $packageQuantity);
+
+                    // Update stok (kurangi kemasan yang dibutuhkan)
+                    $newStock = max(0, $currentStock - $packagesNeeded);
+
+                    $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = ? WHERE id = ?");
+                    $stmtUpdateStock->execute([$newStock, $raw_material_id]);
+
+                    $_SESSION['resep_message'] = ['text' => "Item resep baru berhasil ditambahkan! Stok {$materialName} berkurang {$packagesNeeded} kemasan (sisa: {$newStock} kemasan).", 'type' => 'success'];
+                } else {
+                    $_SESSION['resep_message'] = ['text' => 'Item resep baru berhasil ditambahkan!', 'type' => 'success'];
+                }
             } else {
                 $_SESSION['resep_message'] = ['text' => 'Gagal menambahkan item resep baru.', 'type' => 'error'];
             }
@@ -115,9 +137,32 @@ try {
             $redirectUrl .= '?product_id=' . htmlspecialchars($product_id_for_redirect);
         }
 
+        // Ambil info resep yang akan dihapus terlebih dahulu
+        $stmtGetRecipe = $conn->prepare("SELECT pr.quantity_used, rm.current_stock, rm.default_package_quantity, rm.name FROM product_recipes pr JOIN raw_materials rm ON pr.raw_material_id = rm.id WHERE pr.id = ?");
+        $stmtGetRecipe->execute([$recipe_item_id_to_delete]);
+        $recipeInfo = $stmtGetRecipe->fetch(PDO::FETCH_ASSOC);
+
         $stmt = $conn->prepare("DELETE FROM product_recipes WHERE id = ?");
         if ($stmt->execute([$recipe_item_id_to_delete])) {
-            $_SESSION['resep_message'] = ['text' => 'Item resep berhasil dihapus!', 'type' => 'success'];
+            if ($recipeInfo) {
+                // Kembalikan stok yang sudah digunakan
+                $quantityUsed = $recipeInfo['quantity_used'];
+                $currentStock = $recipeInfo['current_stock'];
+                $packageQuantity = $recipeInfo['default_package_quantity'];
+                $materialName = $recipeInfo['name'];
+
+                // Hitung berapa kemasan yang dikembalikan
+                $packagesReturn = ceil($quantityUsed / $packageQuantity);
+                $newStock = $currentStock + $packagesReturn;
+
+                // Update stok (tambah kemasan yang dikembalikan)
+                $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = ? WHERE id = (SELECT raw_material_id FROM product_recipes WHERE id = ? LIMIT 1)");
+                $stmtUpdateStock->execute([$newStock, $recipe_item_id_to_delete]);
+
+                $_SESSION['resep_message'] = ['text' => "Item resep berhasil dihapus! Stok {$materialName} dikembalikan {$packagesReturn} kemasan (total: {$newStock} kemasan).", 'type' => 'success'];
+            } else {
+                $_SESSION['resep_message'] = ['text' => 'Item resep berhasil dihapus!', 'type' => 'success'];
+            }
         } else {
             $_SESSION['resep_message'] = ['text' => 'Gagal menghapus item resep.', 'type' => 'error'];
         }
