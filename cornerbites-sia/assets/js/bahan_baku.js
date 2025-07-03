@@ -1,4 +1,3 @@
-
 // bahan_baku.js
 // JavaScript functions for bahan baku management with AJAX search
 
@@ -40,11 +39,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateLabelsBasedOnType(type) {
         if (type === 'bahan') {
             purchaseSizeLabel.textContent = 'Ukuran Beli Kemasan Bahan';
-            currentStockLabel.textContent = 'Jumlah Bahan Tersedia';
+            currentStockLabel.textContent = 'Stok Bahan Tersedia';
             purchasePriceLabel.textContent = 'Harga Beli Per Kemasan Bahan';
-            purchaseSizeHelp.textContent = 'Isi per kemasan yang Anda beli (sesuai satuan di atas)';
+            purchaseSizeHelp.textContent = 'Isi per kemasan bahan yang Anda beli (sesuai satuan yang tertera di plastik kemasan yang anda beli)';
             purchasePriceHelp.textContent = 'Harga per kemasan bahan saat pembelian';
-            currentStockHelp.textContent = 'Berapa kemasan bahan yang saat ini tersedia di stok';
+            currentStockHelp.textContent = 'Berapa berat bahan yang saat ini tersedia di stok';
             submitButton.innerHTML = `
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -53,11 +52,11 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         } else {
             purchaseSizeLabel.textContent = 'Ukuran Beli Kemasan';
-            currentStockLabel.textContent = 'Jumlah Kemasan Tersedia';
+            currentStockLabel.textContent = 'Stok Kemasan Tersedia';
             purchasePriceLabel.textContent = 'Harga Beli Per Kemasan';
-            purchaseSizeHelp.textContent = 'Jumlah kemasan per paket pembelian (sesuai satuan di atas)';
+            purchaseSizeHelp.textContent = 'Isi per kemasan yang Anda beli (sesuai satuan yang tertera di kemasan yang anda beli)';
             purchasePriceHelp.textContent = 'Harga per kemasan saat pembelian';
-            currentStockHelp.textContent = 'Berapa kemasan yang saat ini tersedia di stok';
+            currentStockHelp.textContent = 'Berapa stok kemasan yang saat ini tersedia';
             submitButton.innerHTML = `
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -131,11 +130,11 @@ function editBahanBaku(material) {
 
     if (material.type === 'bahan') {
         purchaseSizeLabel.textContent = 'Ukuran Beli Kemasan Bahan';
-        currentStockLabel.textContent = 'Jumlah Bahan Tersedia';
+        currentStockLabel.textContent = 'Stok Terakhir';
         purchasePriceLabel.textContent = 'Harga Beli Per Kemasan Bahan';
-        purchaseSizeHelp.textContent = 'Isi per kemasan yang Anda beli (sesuai satuan di atas)';
+        purchaseSizeHelp.textContent = 'Isi per kemasan bahan yang Anda beli (sesuai satuan yang tertera di plastik kemasan yang anda beli)';
         purchasePriceHelp.textContent = 'Harga per kemasan bahan saat pembelian';
-        currentStockHelp.textContent = 'Berapa kemasan bahan yang saat ini tersedia di stok';
+        currentStockHelp.textContent = 'Stok fisik setelah dikurangi penggunaan dalam resep';
         document.getElementById('form-title').textContent = 'Edit Bahan';
         submitButton.innerHTML = `
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,11 +144,11 @@ function editBahanBaku(material) {
         `;
     } else {
         purchaseSizeLabel.textContent = 'Ukuran Beli Kemasan';
-        currentStockLabel.textContent = 'Jumlah Kemasan Tersedia';
+        currentStockLabel.textContent = 'Stok Terakhir';
         purchasePriceLabel.textContent = 'Harga Beli Per Kemasan';
-        purchaseSizeHelp.textContent = 'Jumlah kemasan per paket pembelian (sesuai satuan di atas)';
+        purchaseSizeHelp.textContent = 'Isi per kemasan yang Anda beli (sesuai satuan yang tertera di kemasan yang anda beli)';
         purchasePriceHelp.textContent = 'Harga per kemasan saat pembelian';
-        currentStockHelp.textContent = 'Berapa kemasan yang saat ini tersedia di stok';
+        currentStockHelp.textContent = 'Stok fisik setelah dikurangi penggunaan dalam resep';
         document.getElementById('form-title').textContent = 'Edit Kemasan';
         submitButton.innerHTML = `
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,13 +199,13 @@ function resetForm() {
     const purchaseSizeHelp = document.getElementById('purchase_size_help');
     const purchasePriceHelp = document.getElementById('purchase_price_help');
     const currentStockHelp = document.getElementById('current_stock_help');
-    
+
     purchaseSizeLabel.textContent = 'Ukuran Beli Kemasan Bahan';
-    currentStockLabel.textContent = 'Jumlah Bahan Tersedia';
+    currentStockLabel.textContent = 'Stok Bahan Tersedia';
     purchasePriceLabel.textContent = 'Harga Beli Per Kemasan Bahan';
-    purchaseSizeHelp.textContent = 'Isi per kemasan yang Anda beli (sesuai satuan di atas)';
+    purchaseSizeHelp.textContent = 'Isi per kemasan bahan yang Anda beli (sesuai satuan yang tertera di plastik kemasan yang anda beli)';
     purchasePriceHelp.textContent = 'Harga per kemasan bahan saat pembelian';
-    currentStockHelp.textContent = 'Berapa kemasan bahan yang saat ini tersedia di stok';
+    currentStockHelp.textContent = 'Berapa berat bahan yang saat ini tersedia di stok';
 
     document.getElementById('form-title').textContent = 'Tambah Bahan Baku/Kemasan Baru';
 

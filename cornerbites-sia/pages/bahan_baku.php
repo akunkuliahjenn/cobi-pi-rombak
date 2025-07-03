@@ -1,5 +1,4 @@
-
-
+php
 <?php
 // pages/bahan_baku.php
 // Halaman manajemen data bahan baku (CRUD) dengan pagination dan pencarian
@@ -66,19 +65,36 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                                 <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Ukuran:</span>
+                                <span>Ukuran Kemasan:</span>
                                 <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Stok:</span>
+                                <span>Stok Fisik Tersedia:</span>
                                 <span class="<?php echo $material['current_stock'] <= 5 ? 'text-red-600' : 'text-green-600'; ?> font-medium">
-                                    <?php echo number_format($material['current_stock']); ?> kemasan
+                                    <?php echo number_format($material['current_stock']); ?> <?php echo htmlspecialchars($material['unit']); ?>
                                 </span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Terpakai:</span>
+                                <span>Total Digunakan dalam Resep:</span>
                                 <span class="text-purple-600"><?php echo number_format($material['total_used'], ($material['total_used'] == floor($material['total_used'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                             </div>
+                            <div class="flex justify-between">
+                                <span>Stok Terakhir:</span>
+                                <span class="<?php 
+                                    $stok_terakhir = $material['current_stock'] - $material['total_used'];
+                                    echo $stok_terakhir <= 5 ? 'text-red-600' : 'text-blue-600'; 
+                                ?> font-medium">
+                                    <?php echo number_format($stok_terakhir, ($stok_terakhir == floor($stok_terakhir)) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                            <p class="text-xs text-blue-800">
+                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                Stok fisik sudah dikurangi otomatis saat digunakan dalam resep
+                            </p>
                         </div>
                         <div class="mt-4 flex items-center space-x-2">
                             <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
@@ -162,19 +178,36 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                                 <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Ukuran:</span>
+                                <span>Ukuran Kemasan:</span>
                                 <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Stok:</span>
+                                <span>Stok Fisik Tersedia:</span>
                                 <span class="<?php echo $material['current_stock'] <= 5 ? 'text-red-600' : 'text-green-600'; ?> font-medium">
-                                    <?php echo number_format($material['current_stock']); ?> kemasan
+                                    <?php echo number_format($material['current_stock']); ?> <?php echo htmlspecialchars($material['unit']); ?>
                                 </span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Terpakai:</span>
+                                <span>Total Digunakan dalam Resep:</span>
                                 <span class="text-purple-600"><?php echo number_format($material['total_used'], ($material['total_used'] == floor($material['total_used'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                             </div>
+                            <div class="flex justify-between">
+                                <span>Stok Terakhir:</span>
+                                <span class="<?php 
+                                    $stok_terakhir = $material['current_stock'] - $material['total_used'];
+                                    echo $stok_terakhir <= 5 ? 'text-red-600' : 'text-blue-600'; 
+                                ?> font-medium">
+                                    <?php echo number_format($stok_terakhir, ($stok_terakhir == floor($stok_terakhir)) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                            <p class="text-xs text-blue-800">
+                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                Stok fisik sudah dikurangi otomatis saat digunakan dalam resep
+                            </p>
                         </div>
                         <div class="mt-4 flex items-center space-x-2">
                             <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
@@ -267,7 +300,7 @@ try {
                  LEFT JOIN product_recipes pr ON rm.id = pr.raw_material_id
                  WHERE rm.type = 'bahan'";
     if (!empty($searchQueryRaw)) {
-        $queryRaw .= " AND rm.name LIKE :search_raw_term";
+        $queryRaw .= " AND name LIKE :search_raw_term";
     }
     $queryRaw .= " GROUP BY rm.id ORDER BY rm.name ASC LIMIT :limit OFFSET :offset";
 
@@ -330,7 +363,7 @@ try {
                        LEFT JOIN product_recipes pr ON rm.id = pr.raw_material_id
                        WHERE rm.type = 'kemasan'";
     if (!empty($searchQueryPackaging)) {
-        $queryPackaging .= " AND rm.name LIKE :search_kemasan_term";
+        $queryPackaging .= " AND name LIKE :search_kemasan_term";
     }
     $queryPackaging .= " GROUP BY rm.id ORDER BY rm.name ASC LIMIT :limit OFFSET :offset";
 
@@ -402,13 +435,13 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                             <p class="text-sm text-gray-600 mt-1">Isi detail bahan baku atau kemasan baru Anda atau gunakan form ini untuk mengedit yang sudah ada.</p>
                         </div>
                     </div>
-                    
+
                     <p class="text-sm text-gray-600 mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <svg class="w-4 h-4 inline mr-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
                         <strong>Catatan:</strong> Form ini untuk menambah bahan/kemasan yang benar-benar baru. Jika bahan sudah ada dan hanya ingin mengubah stok, gunakan tombol "Edit" pada daftar di bawah.
-                    </p>
+                    </p```php
 
                     <form action="../process/simpan_bahan_baku.php" method="POST">
                         <input type="hidden" name="bahan_baku_id" id="bahan_baku_id">
@@ -430,8 +463,7 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                 <label for="type" class="block text-gray-700 text-sm font-semibold mb-2">Kategori</label>
                                 <select id="type" name="type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                                     <option value="bahan">Bahan Baku (untuk produksi)</option>
-                                    <option value="kemasan">Kemasan (untuk pembungkus)</option>
-                                </select>
+                                    <option value="kemasan">Kemasan (untuk pembungkus)</option>                                </select>
                                 <p class="text-xs text-gray-500 mt-1">Pilih kategori yang sesuai</p>
                             </div>
 
@@ -461,9 +493,9 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                             </div>
 
                             <div>
-                                <label for="current_stock" class="block text-gray-700 text-sm font-semibold mb-2" id="current_stock_label">Jumlah Bahan Tersedia</label>
-                                <input type="number" step="1" id="current_stock" name="current_stock" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Contoh: 5 (berarti 5 kemasan)" min="0" required>
-                                <p class="text-xs text-gray-500 mt-1" id="current_stock_help">Berapa kemasan bahan yang saat ini tersedia di stok</p>
+                                <label for="current_stock" class="block text-gray-700 text-sm font-semibold mb-2" id="current_stock_label">Stok Bahan Tersedia</label>
+                                <input type="number" step="0.1" id="current_stock" name="current_stock" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Contoh: 1000 (untuk 1000 gram tersedia)" min="0" required>
+                                <p class="text-xs text-gray-500 mt-1" id="current_stock_help">Berapa berat bahan yang saat ini tersedia di stok</p>
                             </div>
                         </div>
 
@@ -558,19 +590,36 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                                 <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Ukuran:</span>
+                                                <span>Ukuran Kemasan:</span>
                                                 <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Stok:</span>
+                                                <span>Stok Fisik Tersedia:</span>
                                                 <span class="<?php echo $material['current_stock'] <= 5 ? 'text-red-600' : 'text-green-600'; ?> font-medium">
-                                                    <?php echo number_format($material['current_stock']); ?> kemasan
+                                                    <?php echo number_format($material['current_stock']); ?> <?php echo htmlspecialchars($material['unit']); ?>
                                                 </span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Terpakai:</span>
+                                                <span>Total Digunakan dalam Resep:</span>
                                                 <span class="text-purple-600"><?php echo number_format($material['total_used'], ($material['total_used'] == floor($material['total_used'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                                             </div>
+                            <div class="flex justify-between">
+                                <span>Stok Terakhir:</span>
+                                <span class="<?php 
+                                    $stok_terakhir = $material['current_stock'] - $material['total_used'];
+                                    echo $stok_terakhir <= 5 ? 'text-red-600' : 'text-blue-600'; 
+                                ?> font-medium">
+                                    <?php echo number_format($stok_terakhir, ($stok_terakhir == floor($stok_terakhir)) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                </span>
+                            </div>
+                        </div>
+                                        <div class="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                            <p class="text-xs text-blue-800">
+                                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Stok fisik sudah dikurangi otomatis saat digunakan dalam resep
+                                            </p>
                                         </div>
                                         <div class="mt-4 flex items-center space-x-2">
                                             <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
@@ -703,19 +752,36 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                                 <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Ukuran:</span>
+                                                <span>Ukuran Kemasan:</span>
                                                 <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Stok:</span>
+                                                <span>Stok Fisik Tersedia:</span>
                                                 <span class="<?php echo $material['current_stock'] <= 5 ? 'text-red-600' : 'text-green-600'; ?> font-medium">
-                                                    <?php echo number_format($material['current_stock']); ?> kemasan
+                                                    <?php echo number_format($material['current_stock']); ?> <?php echo htmlspecialchars($material['unit']); ?>
                                                 </span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Terpakai:</span>
+                                                <span>Total Digunakan dalam Resep:</span>
                                                 <span class="text-purple-600"><?php echo number_format($material['total_used'], ($material['total_used'] == floor($material['total_used'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
                                             </div>
+                            <div class="flex justify-between">
+                                <span>Stok Terakhir:</span>
+                                <span class="<?php 
+                                    $stok_terakhir = $material['current_stock'] - $material['total_used'];
+                                    echo $stok_terakhir <= 5 ? 'text-red-600' : 'text-blue-600'; 
+                                ?> font-medium">
+                                    <?php echo number_format($stok_terakhir, ($stok_terakhir == floor($stok_terakhir)) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                </span>
+                            </div>
+                        </div>
+                                        <div class="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                            <p class="text-xs text-blue-800">
+                                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Stok fisik sudah dikurangi otomatis saat digunakan dalam resep
+                                            </p>
                                         </div>
                                         <div class="mt-4 flex items-center space-x-2">
                                             <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">

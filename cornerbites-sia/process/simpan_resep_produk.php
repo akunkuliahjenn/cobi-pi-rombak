@@ -1,6 +1,7 @@
+
 <?php
 // process/simpan_resep_produk.php
-// File ini menangani logika penyimpanan/pembaruan/penghapusan item resep produk.
+// File ini menangani logika penyimpanan/pembaruan/penghapusan item resep produk dengan stok real-time
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -78,13 +79,54 @@ try {
             exit();
         }
 
+        // Ambil info bahan baku untuk validasi stok
+        $stmtMaterial = $conn->prepare("SELECT name, current_stock, unit FROM raw_materials WHERE id = ?");
+        $stmtMaterial->execute([$raw_material_id]);
+        $materialInfo = $stmtMaterial->fetch(PDO::FETCH_ASSOC);
+
+        if (!$materialInfo) {
+            $_SESSION['resep_message'] = ['text' => 'Bahan baku/kemasan tidak ditemukan.', 'type' => 'error'];
+            header("Location: " . $redirectUrl);
+            exit();
+        }
+
         if ($recipe_item_id) {
-            // Update Item Resep
-            $stmt = $conn->prepare("UPDATE product_recipes SET raw_material_id = ?, quantity_used = ?, unit_measurement = ?, updated_at = CURRENT_TIMESTAMP() WHERE id = ? AND product_id = ?");
-            if ($stmt->execute([$raw_material_id, $quantity_used, $unit_measurement, $recipe_item_id, $product_id])) {
-                $_SESSION['resep_message'] = ['text' => 'Item resep berhasil diperbarui!', 'type' => 'success'];
+            // Update Item Resep - Perlu mengembalikan stok lama dan kurangi stok baru
+            
+            // Ambil quantity lama untuk mengembalikan stok
+            $stmtOldQuantity = $conn->prepare("SELECT quantity_used FROM product_recipes WHERE id = ? AND product_id = ?");
+            $stmtOldQuantity->execute([$recipe_item_id, $product_id]);
+            $oldQuantity = $stmtOldQuantity->fetchColumn();
+
+            if ($oldQuantity !== false) {
+                // Kembalikan stok lama
+                $stmtRestoreStock = $conn->prepare("UPDATE raw_materials SET current_stock = current_stock + ? WHERE id = ?");
+                $stmtRestoreStock->execute([$oldQuantity, $raw_material_id]);
+
+                // Cek apakah stok cukup untuk quantity baru
+                $stmtCheckStock = $conn->prepare("SELECT current_stock FROM raw_materials WHERE id = ?");
+                $stmtCheckStock->execute([$raw_material_id]);
+                $currentStock = $stmtCheckStock->fetchColumn();
+
+                if ($currentStock < $quantity_used) {
+                    $_SESSION['resep_message'] = ['text' => "Stok {$materialInfo['name']} tidak mencukupi. Stok tersedia: {$currentStock} {$materialInfo['unit']}, diperlukan: {$quantity_used} {$unit_measurement}", 'type' => 'error'];
+                    header("Location: " . $redirectUrl);
+                    exit();
+                }
+
+                // Update resep dengan quantity baru
+                $stmt = $conn->prepare("UPDATE product_recipes SET raw_material_id = ?, quantity_used = ?, unit_measurement = ?, updated_at = CURRENT_TIMESTAMP() WHERE id = ? AND product_id = ?");
+                if ($stmt->execute([$raw_material_id, $quantity_used, $unit_measurement, $recipe_item_id, $product_id])) {
+                    // Kurangi stok dengan quantity baru
+                    $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = current_stock - ? WHERE id = ?");
+                    $stmtUpdateStock->execute([$quantity_used, $raw_material_id]);
+                    
+                    $_SESSION['resep_message'] = ['text' => "Item resep berhasil diperbarui! Stok {$materialInfo['name']} disesuaikan.", 'type' => 'success'];
+                } else {
+                    $_SESSION['resep_message'] = ['text' => 'Gagal memperbarui item resep.', 'type' => 'error'];
+                }
             } else {
-                $_SESSION['resep_message'] = ['text' => 'Gagal memperbarui item resep.', 'type' => 'error'];
+                $_SESSION['resep_message'] = ['text' => 'Data resep lama tidak ditemukan.', 'type' => 'error'];
             }
         } else {
             // Tambah Item Resep Baru
@@ -97,31 +139,26 @@ try {
                 exit();
             }
 
+            // Cek apakah stok cukup
+            if ($materialInfo['current_stock'] < $quantity_used) {
+                $_SESSION['resep_message'] = ['text' => "Stok {$materialInfo['name']} tidak mencukupi. Stok tersedia: {$materialInfo['current_stock']} {$materialInfo['unit']}, diperlukan: {$quantity_used} {$unit_measurement}", 'type' => 'error'];
+                header("Location: " . $redirectUrl);
+                exit();
+            }
+
+            // Tambahkan item resep baru
             $stmt = $conn->prepare("INSERT INTO product_recipes (product_id, raw_material_id, quantity_used, unit_measurement) VALUES (?, ?, ?, ?)");
             if ($stmt->execute([$product_id, $raw_material_id, $quantity_used, $unit_measurement])) {
-                // Otomatis mengurangi stok bahan baku/kemasan berdasarkan quantity yang digunakan
-                $stmtGetMaterial = $conn->prepare("SELECT current_stock, default_package_quantity, name FROM raw_materials WHERE id = ?");
-                $stmtGetMaterial->execute([$raw_material_id]);
-                $materialInfo = $stmtGetMaterial->fetch(PDO::FETCH_ASSOC);
+                // Kurangi stok otomatis
+                $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = current_stock - ? WHERE id = ?");
+                $stmtUpdateStock->execute([$quantity_used, $raw_material_id]);
 
-                if ($materialInfo) {
-                    $currentStock = $materialInfo['current_stock'];
-                    $packageQuantity = $materialInfo['default_package_quantity'];
-                    $materialName = $materialInfo['name'];
+                // Ambil stok terbaru untuk pesan
+                $stmtNewStock = $conn->prepare("SELECT current_stock FROM raw_materials WHERE id = ?");
+                $stmtNewStock->execute([$raw_material_id]);
+                $newStock = $stmtNewStock->fetchColumn();
 
-                    // Hitung berapa kemasan yang dibutuhkan untuk quantity yang digunakan
-                    $packagesNeeded = ceil($quantity_used / $packageQuantity);
-
-                    // Update stok (kurangi kemasan yang dibutuhkan)
-                    $newStock = max(0, $currentStock - $packagesNeeded);
-
-                    $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = ? WHERE id = ?");
-                    $stmtUpdateStock->execute([$newStock, $raw_material_id]);
-
-                    $_SESSION['resep_message'] = ['text' => "Item resep baru berhasil ditambahkan! Stok {$materialName} berkurang {$packagesNeeded} kemasan (sisa: {$newStock} kemasan).", 'type' => 'success'];
-                } else {
-                    $_SESSION['resep_message'] = ['text' => 'Item resep baru berhasil ditambahkan!', 'type' => 'success'];
-                }
+                $_SESSION['resep_message'] = ['text' => "Item resep baru berhasil ditambahkan! Stok {$materialInfo['name']} berkurang {$quantity_used} {$unit_measurement} (sisa: {$newStock} {$materialInfo['unit']}).", 'type' => 'success'];
             } else {
                 $_SESSION['resep_message'] = ['text' => 'Gagal menambahkan item resep baru.', 'type' => 'error'];
             }
@@ -131,40 +168,36 @@ try {
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
         $recipe_item_id_to_delete = (int) $_GET['id'];
-        $product_id_for_redirect = $_GET['product_id'] ?? null; // Dapatkan product_id untuk redirect
+        $product_id_for_redirect = $_GET['product_id'] ?? null;
 
         if ($product_id_for_redirect) {
             $redirectUrl .= '?product_id=' . htmlspecialchars($product_id_for_redirect);
         }
 
-        // Ambil info resep yang akan dihapus terlebih dahulu
-        $stmtGetRecipe = $conn->prepare("SELECT pr.quantity_used, rm.current_stock, rm.default_package_quantity, rm.name FROM product_recipes pr JOIN raw_materials rm ON pr.raw_material_id = rm.id WHERE pr.id = ?");
+        // Ambil info resep yang akan dihapus untuk mengembalikan stok
+        $stmtGetRecipe = $conn->prepare("SELECT pr.quantity_used, pr.raw_material_id, rm.name, rm.unit FROM product_recipes pr JOIN raw_materials rm ON pr.raw_material_id = rm.id WHERE pr.id = ?");
         $stmtGetRecipe->execute([$recipe_item_id_to_delete]);
         $recipeInfo = $stmtGetRecipe->fetch(PDO::FETCH_ASSOC);
 
-        $stmt = $conn->prepare("DELETE FROM product_recipes WHERE id = ?");
-        if ($stmt->execute([$recipe_item_id_to_delete])) {
-            if ($recipeInfo) {
-                // Kembalikan stok yang sudah digunakan
-                $quantityUsed = $recipeInfo['quantity_used'];
-                $currentStock = $recipeInfo['current_stock'];
-                $packageQuantity = $recipeInfo['default_package_quantity'];
-                $materialName = $recipeInfo['name'];
+        if ($recipeInfo) {
+            // Hapus item resep
+            $stmt = $conn->prepare("DELETE FROM product_recipes WHERE id = ?");
+            if ($stmt->execute([$recipe_item_id_to_delete])) {
+                // Kembalikan stok
+                $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = current_stock + ? WHERE id = ?");
+                $stmtUpdateStock->execute([$recipeInfo['quantity_used'], $recipeInfo['raw_material_id']]);
 
-                // Hitung berapa kemasan yang dikembalikan
-                $packagesReturn = ceil($quantityUsed / $packageQuantity);
-                $newStock = $currentStock + $packagesReturn;
+                // Ambil stok terbaru untuk pesan
+                $stmtNewStock = $conn->prepare("SELECT current_stock FROM raw_materials WHERE id = ?");
+                $stmtNewStock->execute([$recipeInfo['raw_material_id']]);
+                $newStock = $stmtNewStock->fetchColumn();
 
-                // Update stok (tambah kemasan yang dikembalikan)
-                $stmtUpdateStock = $conn->prepare("UPDATE raw_materials SET current_stock = ? WHERE id = (SELECT raw_material_id FROM product_recipes WHERE id = ? LIMIT 1)");
-                $stmtUpdateStock->execute([$newStock, $recipe_item_id_to_delete]);
-
-                $_SESSION['resep_message'] = ['text' => "Item resep berhasil dihapus! Stok {$materialName} dikembalikan {$packagesReturn} kemasan (total: {$newStock} kemasan).", 'type' => 'success'];
+                $_SESSION['resep_message'] = ['text' => "Item resep berhasil dihapus! Stok {$recipeInfo['name']} dikembalikan {$recipeInfo['quantity_used']} {$recipeInfo['unit']} (total: {$newStock} {$recipeInfo['unit']}).", 'type' => 'success'];
             } else {
-                $_SESSION['resep_message'] = ['text' => 'Item resep berhasil dihapus!', 'type' => 'success'];
+                $_SESSION['resep_message'] = ['text' => 'Gagal menghapus item resep.', 'type' => 'error'];
             }
         } else {
-            $_SESSION['resep_message'] = ['text' => 'Gagal menghapus item resep.', 'type' => 'error'];
+            $_SESSION['resep_message'] = ['text' => 'Item resep tidak ditemukan.', 'type' => 'error'];
         }
         header("Location: " . $redirectUrl);
         exit();
@@ -181,3 +214,4 @@ try {
     header("Location: " . $redirectUrl);
     exit();
 }
+?>
