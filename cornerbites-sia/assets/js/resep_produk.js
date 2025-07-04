@@ -21,9 +21,17 @@ function formatRupiah(element, hiddenInputId) {
 // Edit resep item function
 function editResepItem(item) {
     document.getElementById('recipe_item_id').value = item.id;
-    document.getElementById('raw_material_id').value = item.raw_material_id;
     document.getElementById('quantity_used').value = item.quantity_used;
     document.getElementById('unit_measurement').value = item.unit_measurement;
+
+    // Determine which tab to show based on raw material type
+    if (item.raw_material_type === 'bahan') {
+        showCategoryTab('bahan');
+        document.getElementById('raw_material_id_bahan').value = item.raw_material_id;
+    } else {
+        showCategoryTab('kemasan');
+        document.getElementById('raw_material_id_kemasan').value = item.raw_material_id;
+    }
 
     document.getElementById('form-resep-title').textContent = 'Edit Item Resep';
     const submitButton = document.getElementById('submit_resep_button');
@@ -46,9 +54,18 @@ function editResepItem(item) {
 // Reset resep form function
 function resetResepForm() {
     document.getElementById('recipe_item_id').value = '';
-    document.getElementById('raw_material_id').value = '';
     document.getElementById('quantity_used').value = '';
     document.getElementById('unit_measurement').value = recipeUnitOptions[0];
+    
+    // Reset both dropdowns
+    const bahanSelect = document.getElementById('raw_material_id_bahan');
+    const kemasamSelect = document.getElementById('raw_material_id_kemasan');
+    
+    if (bahanSelect) bahanSelect.value = '';
+    if (kemasamSelect) kemasamSelect.value = '';
+    
+    // Show bahan tab by default
+    showCategoryTab('bahan');
 
     document.getElementById('form-resep-title').textContent = 'Tambah Item ke Resep';
     const submitButton = document.getElementById('submit_resep_button');
@@ -92,6 +109,38 @@ function applySearchRealtimeRecipe(searchTerm, limit = null) {
     sessionStorage.setItem('resepScrollPosition', currentScrollPosition);
     
     window.location.href = currentUrl.toString();
+}
+
+// Form validation before submission
+function validateRecipeForm() {
+    const bahanSelect = document.getElementById('raw_material_id_bahan');
+    const kemasamSelect = document.getElementById('raw_material_id_kemasan');
+    
+    // Check which tab is active
+    const bahanTab = document.getElementById('content-bahan');
+    const kemasamTab = document.getElementById('content-kemasan');
+    
+    if (!bahanTab.classList.contains('hidden')) {
+        // Bahan tab is active
+        if (!bahanSelect.value) {
+            alert('Silakan pilih bahan baku');
+            return false;
+        }
+    } else if (!kemasamTab.classList.contains('hidden')) {
+        // Kemasan tab is active
+        if (!kemasamSelect.value) {
+            alert('Silakan pilih kemasan');
+            return false;
+        }
+    }
+    
+    const quantityUsed = document.getElementById('quantity_used').value;
+    if (!quantityUsed || quantityUsed <= 0) {
+        alert('Silakan masukkan jumlah yang valid');
+        return false;
+    }
+    
+    return true;
 }
 
 // Initialize when DOM is loaded
@@ -138,6 +187,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Add form validation to recipe form
+    const recipeForm = document.querySelector('form[action="../process/simpan_resep_produk.php"]');
+    if (recipeForm && !recipeForm.querySelector('input[name="action"]')) {
+        recipeForm.addEventListener('submit', function(e) {
+            if (!validateRecipeForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Initialize with bahan tab active
+    if (document.getElementById('tab-bahan')) {
+        showCategoryTab('bahan');
+    }
+
     console.log('Resep Produk page loaded');
 });
 
@@ -158,4 +223,52 @@ function showBreakdownTab(tabName) {
 
     // Set active tab
     document.getElementById('tab-' + tabName).className = 'px-6 py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600 bg-blue-50';
+}
+
+// Function untuk menampilkan tab kategori bahan/kemasan
+function showCategoryTab(categoryName) {
+    // Hide semua content
+    document.getElementById('content-bahan').classList.add('hidden');
+    document.getElementById('content-kemasan').classList.add('hidden');
+
+    // Reset semua tab button
+    document.getElementById('tab-bahan').className = 'px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700';
+    document.getElementById('tab-kemasan').className = 'px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700';
+
+    // Show content yang dipilih
+    document.getElementById('content-' + categoryName).classList.remove('hidden');
+
+    // Set active tab
+    document.getElementById('tab-' + categoryName).className = 'px-6 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600 bg-blue-50';
+
+    // Clear dan disable dropdown yang tidak aktif, enable yang aktif
+    if (categoryName === 'bahan') {
+        const kemasamSelect = document.getElementById('raw_material_id_kemasan');
+        const bahanSelect = document.getElementById('raw_material_id_bahan');
+        
+        if (kemasamSelect) {
+            kemasamSelect.value = '';
+            kemasamSelect.disabled = true;
+            kemasamSelect.removeAttribute('name');
+        }
+        if (bahanSelect) {
+            bahanSelect.disabled = false;
+            bahanSelect.setAttribute('name', 'raw_material_id');
+            bahanSelect.required = true;
+        }
+    } else {
+        const bahanSelect = document.getElementById('raw_material_id_bahan');
+        const kemasamSelect = document.getElementById('raw_material_id_kemasan');
+        
+        if (bahanSelect) {
+            bahanSelect.value = '';
+            bahanSelect.disabled = true;
+            bahanSelect.removeAttribute('name');
+        }
+        if (kemasamSelect) {
+            kemasamSelect.disabled = false;
+            kemasamSelect.setAttribute('name', 'raw_material_id');
+            kemasamSelect.required = true;
+        }
+    }
 }

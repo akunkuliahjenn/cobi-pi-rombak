@@ -20,8 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Convert ke number saat submit
         const form = priceInput.closest('form');
         if (form) {
-            form.addEventListener('submit', function() {
-                priceInput.value = priceInput.value.replace(/[^\d]/g, '');
+            form.addEventListener('submit', function(e) {
+                // Convert formatted price back to number
+                const currentValue = priceInput.value.replace(/[^\d]/g, '');
+                priceInput.value = currentValue;
+                
+                // Let the form submit normally
+                return true;
             });
         }
     }
@@ -103,6 +108,16 @@ function formatNumber(num) {
 }
 
 function editBahanBaku(material) {
+    // Scroll to form first
+    const formTitle = document.getElementById('form-title');
+    if (formTitle) {
+        formTitle.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+
+    // Fill form data
     document.getElementById('bahan_baku_id').value = material.id;
     document.getElementById('name').value = material.name;
     document.getElementById('brand').value = material.brand || '';
@@ -113,8 +128,11 @@ function editBahanBaku(material) {
     const purchaseSize = parseFloat(material.default_package_quantity);
     document.getElementById('purchase_size').value = purchaseSize % 1 === 0 ? purchaseSize.toFixed(0) : purchaseSize.toString();
 
+    // Calculate stok terakhir (current_stock - total_used)
     const currentStock = parseFloat(material.current_stock);
-    document.getElementById('current_stock').value = currentStock % 1 === 0 ? currentStock.toFixed(0) : currentStock.toString();
+    const totalUsed = parseFloat(material.total_used) || 0;
+    const stokTerakhir = currentStock - totalUsed;
+    document.getElementById('current_stock').value = stokTerakhir % 1 === 0 ? stokTerakhir.toFixed(0) : stokTerakhir.toString();
 
     document.getElementById('purchase_price_per_unit').value = formatNumber(material.purchase_price_per_unit);
 
@@ -134,7 +152,7 @@ function editBahanBaku(material) {
         purchasePriceLabel.textContent = 'Harga Beli Per Kemasan Bahan';
         purchaseSizeHelp.textContent = 'Isi per kemasan bahan yang Anda beli (sesuai satuan yang tertera di plastik kemasan yang anda beli)';
         purchasePriceHelp.textContent = 'Harga per kemasan bahan saat pembelian';
-        currentStockHelp.textContent = 'Stok fisik setelah dikurangi penggunaan dalam resep';
+        currentStockHelp.textContent = 'Update stok terakhir yang tersedia (setelah dikurangi penggunaan dalam resep)';
         document.getElementById('form-title').textContent = 'Edit Bahan';
         submitButton.innerHTML = `
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +166,7 @@ function editBahanBaku(material) {
         purchasePriceLabel.textContent = 'Harga Beli Per Kemasan';
         purchaseSizeHelp.textContent = 'Isi per kemasan yang Anda beli (sesuai satuan yang tertera di kemasan yang anda beli)';
         purchasePriceHelp.textContent = 'Harga per kemasan saat pembelian';
-        currentStockHelp.textContent = 'Stok fisik setelah dikurangi penggunaan dalam resep';
+        currentStockHelp.textContent = 'Update stok terakhir yang tersedia (setelah dikurangi penggunaan dalam resep)';
         document.getElementById('form-title').textContent = 'Edit Kemasan';
         submitButton.innerHTML = `
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,24 +180,14 @@ function editBahanBaku(material) {
     submitButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
     cancelButton.classList.remove('hidden');
 
-    // Scroll to form dengan delay minimal untuk responsivitas
-    const formTitle = document.getElementById('form-title');
-    if (formTitle) {
-        // Scroll langsung ke form tanpa delay berlebihan
-        formTitle.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-        });
-        
-        // Focus pada nama field dengan delay minimal
-        setTimeout(() => {
-            const nameField = document.getElementById('name');
-            if (nameField) {
-                nameField.focus();
-                nameField.select(); // Select text untuk editing yang lebih mudah
-            }
-        }, 200);
-    }
+    // Focus pada nama field dengan delay minimal
+    setTimeout(() => {
+        const nameField = document.getElementById('name');
+        if (nameField) {
+            nameField.focus();
+            nameField.select(); // Select text untuk editing yang lebih mudah
+        }
+    }, 300);
 }
 
 function resetForm() {

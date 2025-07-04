@@ -1,4 +1,3 @@
-php
 <?php
 // pages/bahan_baku.php
 // Halaman manajemen data bahan baku (CRUD) dengan pagination dan pencarian
@@ -432,7 +431,7 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                         </div>
                         <div>
                             <h2 class="text-xl font-semibold text-gray-800" id="form-title">Tambah Bahan Baku/Kemasan Baru</h2>
-                            <p class="text-sm text-gray-600 mt-1">Isi detail bahan baku atau kemasan baru Anda atau gunakan form ini untuk mengedit yang sudah ada.</p>
+                            <p class="text-sm text-gray-600 mt-1">Isidetail bahan baku atau kemasan baru Anda atau gunakan form ini untuk mengedit yang sudah ada.</p>
                         </div>
                     </div>
 
@@ -441,7 +440,7 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
                         <strong>Catatan:</strong> Form ini untuk menambah bahan/kemasan yang benar-benar baru. Jika bahan sudah ada dan hanya ingin mengubah stok, gunakan tombol "Edit" pada daftar di bawah.
-                    </p```php
+                    </p>
 
                     <form action="../process/simpan_bahan_baku.php" method="POST">
                         <input type="hidden" name="bahan_baku_id" id="bahan_baku_id">

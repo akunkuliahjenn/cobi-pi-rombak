@@ -21,8 +21,9 @@ try {
         $type = trim($_POST['type'] ?? 'bahan');
         $unit = trim($_POST['unit'] ?? '');
         $purchase_size = (float) ($_POST['purchase_size'] ?? 0);
-        // Pastikan nama kolom di PHP sesuai dengan nama kolom di DB
-        $purchase_price_per_unit = (float) ($_POST['purchase_price_per_unit'] ?? 0);
+        // Clean up price input (remove Indonesian number formatting)
+        $purchase_price_input = trim($_POST['purchase_price_per_unit'] ?? '');
+        $purchase_price_per_unit = (float) str_replace(['.', ','], ['', '.'], $purchase_price_input);
         $current_stock = (float) ($_POST['current_stock'] ?? 0); // Ubah ke float jika stok bisa desimal
 
         // Validasi dasar
@@ -34,8 +35,17 @@ try {
 
         if ($bahan_baku_id) {
             // Update Bahan Baku
+            // Ketika update, current_stock yang diterima adalah "stok terakhir" dari form
+            // Kita perlu menambahkan kembali total_used untuk mendapatkan current_stock yang sebenarnya
+            $stmtGetUsed = $conn->prepare("SELECT COALESCE(SUM(pr.quantity_used), 0) as total_used FROM product_recipes pr WHERE pr.raw_material_id = ?");
+            $stmtGetUsed->execute([$bahan_baku_id]);
+            $totalUsed = $stmtGetUsed->fetchColumn();
+            
+            // current_stock sebenarnya = stok_terakhir_yang_diinput + total_used
+            $actual_current_stock = $current_stock + $totalUsed;
+            
             $stmt = $conn->prepare("UPDATE raw_materials SET name = ?, brand = ?, type = ?, unit = ?, default_package_quantity = ?, purchase_price_per_unit = ?, current_stock = ?, updated_at = CURRENT_TIMESTAMP() WHERE id = ?");
-            if ($stmt->execute([$name, $brand, $type, $unit, $purchase_size, $purchase_price_per_unit, $current_stock, $bahan_baku_id])) {
+            if ($stmt->execute([$name, $brand, $type, $unit, $purchase_size, $purchase_price_per_unit, $actual_current_stock, $bahan_baku_id])) {
                 $_SESSION['bahan_baku_message'] = ['text' => 'Bahan baku berhasil diperbarui!', 'type' => 'success'];
             } else {
                 $_SESSION['bahan_baku_message'] = ['text' => 'Gagal memperbarui bahan baku.', 'type' => 'error'];
